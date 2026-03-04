@@ -1,5 +1,4 @@
-// ItineraryPage.tsx (updated to compute distance & ETA)
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Card,
@@ -83,11 +82,13 @@ const formatBudget = (b?: string | number) => {
   if (b === undefined || b === null || b === "") return null;
   const num = typeof b === "number" ? b : Number(String(b).replace(/[^0-9.-]+/g, ""));
   if (Number.isNaN(num)) return String(b);
-  return num.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  return num.toLocaleString("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 };
 
 const DEFAULT_WALK_SPEED_KMH = 5; // conservative walking
 const DEFAULT_DRIVE_SPEED_KMH = 50; // rough average, adjust per country
+
+const MIN_GEO_UPDATE_MS = 2000; // minimum ms between updates (throttle)
 
 const ItineraryPage: React.FC = () => {
   const navigate = useNavigate();
@@ -106,6 +107,9 @@ const ItineraryPage: React.FC = () => {
     if (!incoming) return undefined;
     return incoming as ItineraryData;
   });
+
+  const watchIdRef = useRef<number | null>(null);
+  const lastUpdateRef = useRef<number>(0);
 
   // fallback sample if nothing incoming
   useEffect(() => {
@@ -150,23 +154,49 @@ const ItineraryPage: React.FC = () => {
     }
   }, [incoming]);
 
-  // Request geolocation once when page loads
+  // Start watching user's position and update live (throttled)
   useEffect(() => {
     if (!navigator.geolocation) {
       console.warn("Geolocation API not available in this browser.");
       return;
     }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-      },
-      (err) => {
-        console.warn("Geolocation denied or failed:", err.message);
-        // leave userCoords null — we still show items without distance
-      },
-      { enableHighAccuracy: false, timeout: 8000 }
-    );
-  }, []);
+
+    const onSuccess = (pos: GeolocationPosition) => {
+      const now = Date.now();
+      if (now - lastUpdateRef.current < MIN_GEO_UPDATE_MS) return; // throttle
+      lastUpdateRef.current = now;
+      setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+    };
+
+    const onError = (err: GeolocationPositionError) => {
+      console.warn("Geolocation watch error:", err.message);
+      // If permission denied, stop watching (no further prompts)
+      if (err.code === err.PERMISSION_DENIED) {
+        if (watchIdRef.current !== null) {
+          navigator.geolocation.clearWatch(watchIdRef.current);
+          watchIdRef.current = null;
+        }
+      }
+      // leave userCoords as-is (may be null)
+    };
+
+    // Options: tune these for battery vs accuracy
+    const options: PositionOptions = {
+      enableHighAccuracy: false, // set true only if you need meter-level accuracy
+      maximumAge: 5000, // allow cached positions up to 5s
+      timeout: 10000,
+    };
+
+    const id = navigator.geolocation.watchPosition(onSuccess, onError, options);
+    watchIdRef.current = id;
+
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+    };
+  }, []); // run once on mount
 
   // Compute distance & ETA when data or userCoords change
   const [augPlaces, setAugPlaces] = useState<any[]>([]);
