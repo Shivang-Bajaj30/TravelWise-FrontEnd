@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Calendar, Users, Wand2, Plus, Minus, Sparkles } from "lucide-react";
+import { Loader2, Calendar, Users, Wand2, Plus, Minus, Sparkles, Wallet, TrendingUp, Crown } from "lucide-react";
 import { generateItinerary } from "@/lib/api";
 
 const TRAVEL_TAGS = [
@@ -27,6 +27,44 @@ const TRAVEL_TAGS = [
   "Nightlife",
 ];
 
+const BUDGET_TIERS = [
+  {
+    key: "low" as const,
+    label: "Low",
+    description: "Budget-friendly",
+    icon: Wallet,
+    amount: 5000,
+    color: "from-emerald-600 to-teal-700",
+    ring: "ring-emerald-400/50",
+    text: "text-emerald-400",
+    bg: "bg-emerald-500/10",
+  },
+  {
+    key: "medium" as const,
+    label: "Medium",
+    description: "Balanced comfort",
+    icon: TrendingUp,
+    amount: 25000,
+    color: "from-amber-600 to-orange-700",
+    ring: "ring-amber-400/50",
+    text: "text-amber-400",
+    bg: "bg-amber-500/10",
+  },
+  {
+    key: "high" as const,
+    label: "High",
+    description: "Premium luxury",
+    icon: Crown,
+    amount: 100000,
+    color: "from-violet-600 to-purple-700",
+    ring: "ring-violet-400/50",
+    text: "text-violet-400",
+    bg: "bg-violet-500/10",
+  },
+];
+
+type BudgetTierKey = (typeof BUDGET_TIERS)[number]["key"];
+
 const TripDetailsPage: React.FC = () => {
   const navigate = useNavigate();
   const locationState = useLocation();
@@ -38,6 +76,7 @@ const TripDetailsPage: React.FC = () => {
   const [preferences, setPreferences] = useState<string[]>([]);
   const [customPref, setCustomPref] = useState("");
   const [budget, setBudget] = useState<number | string>(""); // numeric input (can be empty string)
+  const [budgetTier, setBudgetTier] = useState<BudgetTierKey | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -204,20 +243,84 @@ const TripDetailsPage: React.FC = () => {
               )}
             </div>
 
-            {/* Total Budget (numeric input) */}
-            <div className="space-y-2">
+            {/* Total Budget */}
+            <div className="md:col-span-2 space-y-3">
               <Label className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                Total Budget
+                <Wallet className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> Total Budget
               </Label>
-              <Input
-                type="number"
-                value={budget}
-                onChange={(e) => setBudget(e.target.value === "" ? "" : Number(e.target.value))}
-                placeholder="Enter total budget"
-                min={0}
-                step={1}
-                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              />
+
+              {/* Budget Tier Buttons */}
+              <div className="grid grid-cols-3 gap-2">
+                {BUDGET_TIERS.map((tier) => {
+                  const isActive = budgetTier === tier.key;
+                  const Icon = tier.icon;
+                  return (
+                    <button
+                      key={tier.key}
+                      type="button"
+                      onClick={() => {
+                        if (budgetTier === tier.key) {
+                          setBudgetTier(null);
+                          setBudget("");
+                        } else {
+                          setBudgetTier(tier.key);
+                          setBudget(tier.amount);
+                        }
+                      }}
+                      className={`relative group rounded-lg border p-2.5 text-center transition-all duration-300 cursor-pointer
+                        ${isActive
+                          ? `border-transparent bg-gradient-to-br ${tier.color} text-white shadow-md scale-[1.02]`
+                          : "border-gray-300/50 dark:border-gray-600/60 bg-gray-100/60 dark:bg-gray-800/80 hover:border-gray-400 dark:hover:border-gray-500 hover:shadow-sm"
+                        }
+                      `}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <div
+                          className={`rounded-full p-1.5 transition-colors ${isActive
+                            ? "bg-white/20"
+                            : `${tier.bg}`
+                            }`}
+                        >
+                          <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : tier.text}`} />
+                        </div>
+                        <div className="flex flex-col items-start">
+                          <span className={`font-semibold text-sm leading-tight ${isActive ? "text-white" : "text-gray-800 dark:text-gray-200"
+                            }`}>
+                            {tier.label}
+                          </span>
+                          <span className={`text-[11px] leading-tight ${isActive ? "text-white/75" : "text-gray-500 dark:text-gray-400"
+                            }`}>
+                            ~₹{tier.amount.toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                      </div>
+                      {isActive && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow">
+                          <span className="text-[10px] font-bold">✓</span>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Custom amount input */}
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-sm font-medium pointer-events-none">₹</span>
+                <Input
+                  type="number"
+                  value={budget}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setBudget(val === "" ? "" : Number(val));
+                    setBudgetTier(null); // clear tier when user types custom amount
+                  }}
+                  placeholder="Or enter a custom amount"
+                  min={0}
+                  step={1}
+                  className="pl-7 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
             </div>
 
             {/* Preferences */}
