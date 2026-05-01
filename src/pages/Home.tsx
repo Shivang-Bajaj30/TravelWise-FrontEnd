@@ -2,11 +2,22 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
-interface NominatimResult {
-  display_name: string;
-  lat: string;
-  lon: string;
+interface PhotonFeature {
+  properties: {
+    name: string;
+    state?: string;
+    country?: string;
+    city?: string;
+    type?: string;
+  };
 }
+
+const formatPlace = (p: PhotonFeature['properties']): string => {
+  const parts = [p.name];
+  if (p.state && p.state !== p.name) parts.push(p.state);
+  if (p.country) parts.push(p.country);
+  return parts.join(', ');
+};
 
 const Home: React.FC = () => {
   const images: string[] = [
@@ -21,9 +32,12 @@ const Home: React.FC = () => {
   const [prevImageIndex, setPrevImageIndex] = useState<number | null>(null);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [location, setLocation] = useState<string>('');
-  const [suggestions, setSuggestions] = useState<NominatimResult[]>([]);
+  const [suggestions, setSuggestions] = useState<PhotonFeature[]>([]);
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+  const [isValidLocation, setIsValidLocation] = useState<boolean>(false);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLUListElement>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,26 +65,67 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (location.length < 3) {
+      if (location.length < 3 || isValidLocation) {
         setSuggestions([]);
         setShowSuggestions(false);
+        setIsLoadingSuggestions(false);
         return;
+      }
+
+      setIsLoadingSuggestions(true);
+      try {
+        const res = await fetch(
+          `https://photon.komoot.io/api/?q=${encodeURIComponent(location)}&limit=5&lang=en`
+        );
+        const data = await res.json();
+        const features: PhotonFeature[] = data.features || [];
+        setSuggestions(features);
+        setShowSuggestions(features.length > 0);
+      } catch (err) {
+        console.error('Photon API error:', err);
+        setSuggestions([]);
+        setShowSuggestions(false);
+      } finally {
+        setIsLoadingSuggestions(false);
       }
     };
 
     const debounce = setTimeout(fetchSuggestions, 300);
     return () => clearTimeout(debounce);
-  }, [location]);
+  }, [location, isValidLocation]);
 
-  const handleSuggestionClick = (suggestion: NominatimResult) => {
-    setLocation(suggestion.display_name);
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node) &&
+        inputRef.current &&
+        !inputRef.current.contains(e.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSuggestionClick = (feature: PhotonFeature) => {
+    const formatted = formatPlace(feature.properties);
+    setLocation(formatted);
+    setIsValidLocation(true);
     setSuggestions([]);
     setShowSuggestions(false);
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocation(e.target.value);
+    setIsValidLocation(false); // clear validation when user types
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (location) {
+    if (location && isValidLocation) {
       navigate('/trip-details', { state: { selectedLocation: location } });
     }
   };
@@ -163,27 +218,50 @@ const Home: React.FC = () => {
                 type="text"
                 ref={inputRef}
                 value={location}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocation(e.target.value)}
+                onChange={handleInputChange}
                 placeholder="Where would you like to go?"
-                className="pl-12 pr-4 py-3.5 rounded-2xl text-sm sm:text-base w-full bg-white/95 dark:bg-gray-800/95 backdrop-blur-md border border-white/30 shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white placeholder-gray-400"
+                className={`pl-12 pr-4 py-3.5 rounded-2xl text-sm sm:text-base w-full bg-white/95 dark:bg-gray-800/95 backdrop-blur-md border shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white placeholder-gray-400 transition-colors ${isValidLocation
+                    ? 'border-emerald-400/60 ring-1 ring-emerald-400/30'
+                    : 'border-white/30'
+                  }`}
               />
+              {isValidLocation && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                </div>
+              )}
+              {isLoadingSuggestions && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
               {showSuggestions && suggestions.length > 0 && (
-                <ul className="absolute top-full left-0 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl mt-2 z-[1000] max-h-60 overflow-y-auto">
-                  {suggestions.map((suggestion, index) => (
+                <ul ref={dropdownRef} className="absolute top-full left-0 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl mt-2 z-[1000] max-h-60 overflow-y-auto">
+                  {suggestions.map((feature, index) => (
                     <li
                       key={index}
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      className="px-4 py-3 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 cursor-pointer text-gray-700 dark:text-gray-300 text-sm"
+                      onClick={() => handleSuggestionClick(feature)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 cursor-pointer text-gray-700 dark:text-gray-300 text-sm transition-colors"
                     >
-                      {suggestion.display_name}
+                      <svg className="w-4 h-4 text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                      <span>{formatPlace(feature.properties)}</span>
                     </li>
                   ))}
                 </ul>
               )}
+              {!isLoadingSuggestions && location.length >= 3 && !isValidLocation && suggestions.length === 0 && showSuggestions === false && (
+                <div className="absolute top-full left-0 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl mt-2 z-[1000] px-4 py-3 text-sm text-gray-400 dark:text-gray-500">
+                  No locations found. Try a different search.
+                </div>
+              )}
             </div>
             <button
               type="submit"
-              className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-7 py-3.5 rounded-2xl text-sm sm:text-base font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-[1.02] active:scale-[0.98]"
+              disabled={!isValidLocation}
+              className={`px-7 py-3.5 rounded-2xl text-sm sm:text-base font-semibold transition-all duration-300 shadow-lg ${isValidLocation
+                  ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-[1.02] active:scale-[0.98] cursor-pointer'
+                  : 'bg-gray-400/50 text-white/60 cursor-not-allowed shadow-none'
+                }`}
             >
               Explore
             </button>
