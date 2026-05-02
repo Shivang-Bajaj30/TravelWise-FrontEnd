@@ -17,8 +17,8 @@ const Packages = () => {
       id: 1,
       name: "European Grand Tour",
       description: "Experience the best of Europe with visits to Paris, Rome, Barcelona, and Amsterdam. Perfect for first-time visitors.",
-      image: "/images/europe-tour.jpg",
-      price: "From $2,499",
+      image: "/images/europe_grand_tour.png",
+      price: "€2,499 (₹2,25,000)",
       duration: "14 days",
       destinations: ["Paris", "Rome", "Barcelona", "Amsterdam"],
       includes: ["Flights", "Hotels", "Guided Tours", "Breakfast"],
@@ -29,8 +29,8 @@ const Packages = () => {
       id: 2,
       name: "Asian Adventure",
       description: "Discover the wonders of Asia with stops in Tokyo, Bangkok, Singapore, and Bali. Culture, cuisine, and adventure await.",
-      image: "/images/asia-tour.jpg",
-      price: "From $1,899",
+      image: "/images/asian_adventure.png",
+      price: "¥345,000 (₹1,89,900)",
       duration: "12 days",
       destinations: ["Tokyo", "Bangkok", "Singapore", "Bali"],
       includes: ["Flights", "Hotels", "Local Transport", "Some Meals"],
@@ -41,9 +41,9 @@ const Packages = () => {
       id: 3,
       name: "Mediterranean Cruise",
       description: "Sail through the Mediterranean with stops at beautiful coastal cities. Luxury and relaxation combined.",
-      image: "/images/mediterranean-cruise.jpg",
-      price: "From $1,699",
-      duration: "10 days",
+      image: "/images/mediterranean_cruise.png",
+      price: "€699 (₹62,900)",
+      duration: "4 days",
       destinations: ["Barcelona", "Nice", "Rome", "Santorini"],
       includes: ["Cruise Ship", "All Meals", "Entertainment", "Shore Excursions"],
       rating: 4.9,
@@ -53,8 +53,8 @@ const Packages = () => {
       id: 4,
       name: "Safari & Beach Combo",
       description: "Experience the best of Africa with a Kenyan safari followed by relaxation on Zanzibar's pristine beaches.",
-      image: "/images/safari-beach.jpg",
-      price: "From $3,299",
+      image: "/images/safari_beach.png",
+      price: "KSh 510,000 (₹3,31,000)",
       duration: "11 days",
       destinations: ["Nairobi", "Masai Mara", "Zanzibar"],
       includes: ["Flights", "Safari Lodge", "Beach Resort", "Game Drives"],
@@ -65,8 +65,8 @@ const Packages = () => {
       id: 5,
       name: "South American Explorer",
       description: "Journey through South America visiting Peru, Chile, and Argentina. Ancient ruins, wine country, and vibrant cities.",
-      image: "/images/south-america.jpg",
-      price: "From $2,799",
+      image: "/images/south_america.png",
+      price: "$2,799 (₹2,33,700)",
       duration: "16 days",
       destinations: ["Lima", "Cusco", "Santiago", "Buenos Aires"],
       includes: ["Flights", "Hotels", "Machu Picchu Tour", "Wine Tasting"],
@@ -77,8 +77,8 @@ const Packages = () => {
       id: 6,
       name: "Northern Lights Adventure",
       description: "Chase the Aurora Borealis in Iceland and Norway. Winter wonderland with unique experiences and natural phenomena.",
-      image: "/images/northern-lights.jpg",
-      price: "From $2,199",
+      image: "/images/northern_lights.png",
+      price: "kr 28,000 (₹2,18,400)",
       duration: "8 days",
       destinations: ["Reykjavik", "Tromsø", "Bergen"],
       includes: ["Flights", "Hotels", "Northern Lights Tours", "Winter Activities"],
@@ -151,7 +151,9 @@ const Packages = () => {
               <div className="p-6">
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white">{pkg.name}</h3>
-                  <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-3 py-1 rounded-full whitespace-nowrap ml-2">{pkg.price}</span>
+                  <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-3 py-1 rounded-full whitespace-nowrap ml-2">
+                    {pkg.price} <span className="text-xs font-normal opacity-80">/ person</span>
+                  </span>
                 </div>
 
                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 leading-relaxed">
@@ -206,15 +208,20 @@ const Packages = () => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => navigate('/trip-details', { state: { selectedLocation: pkg.destinations[0] } })}
-                    className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-2.5 px-4 rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 text-sm shadow-md hover:shadow-lg"
-                  >
-                    Book Now
-                  </button>
-                  <button className="px-4 py-2.5 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 text-sm">
-                    Details
+                <div className="flex flex-col gap-3">
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => navigate('/trip-details', { state: { selectedLocation: pkg.destinations[0] } })}
+                      className="flex-1 bg-linear-to-r from-indigo-500 to-purple-600 text-white py-2.5 px-4 rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 text-sm cursor-pointer shadow-md hover:shadow-lg"
+                    >
+                      Book Now
+                    </button>
+                    <button className="px-4 py-2.5 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 text-sm cursor-pointer">
+                      Details
+                    </button>
+                  </div>
+                  <button className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 text-sm cursor-pointer">
+                    Save
                   </button>
                 </div>
               </div>

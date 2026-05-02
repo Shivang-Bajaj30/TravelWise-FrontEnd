@@ -17,8 +17,8 @@ const Destinations = () => {
       id: 1,
       name: "Paris, France",
       description: "The City of Light awaits with its iconic landmarks, world-class museums, and romantic atmosphere.",
-      image: "/images/paris.png",
-      price: "From $1,299",
+      image: "/images/dest_paris.png",
+      price: "€1,180 (₹1,06,200)",
       duration: "7 days",
       highlights: ["Eiffel Tower", "Louvre Museum", "Seine River Cruise"]
     },
@@ -26,8 +26,8 @@ const Destinations = () => {
       id: 2,
       name: "Tokyo, Japan",
       description: "Experience the perfect blend of ancient traditions and cutting-edge technology in Japan's capital.",
-      image: "/images/Japan.png",
-      price: "From $1,599",
+      image: "/images/dest_tokyo.png",
+      price: "¥240,000 (₹1,32,000)",
       duration: "10 days",
       highlights: ["Mount Fuji", "Shibuya Crossing", "Traditional Temples"]
     },
@@ -35,8 +35,8 @@ const Destinations = () => {
       id: 3,
       name: "Santorini, Greece",
       description: "Discover stunning sunsets, white-washed buildings, and crystal-clear waters in this Greek paradise.",
-      image: "/images/Greece.png",
-      price: "From $999",
+      image: "/images/dest_santorini.png",
+      price: "€900 (₹81,000)",
       duration: "5 days",
       highlights: ["Oia Village", "Blue Dome Churches", "Wine Tasting"]
     },
@@ -44,8 +44,8 @@ const Destinations = () => {
       id: 4,
       name: "Bali, Indonesia",
       description: "Immerse yourself in tropical beauty, ancient temples, and vibrant culture on the Island of Gods.",
-      image: "/images/bali.jpg",
-      price: "From $899",
+      image: "/images/dest_bali.png",
+      price: "Rp 14,000,000 (₹75,000)",
       duration: "8 days",
       highlights: ["Rice Terraces", "Beach Resorts", "Hindu Temples"]
     },
@@ -53,8 +53,8 @@ const Destinations = () => {
       id: 5,
       name: "New York City, USA",
       description: "The city that never sleeps offers endless entertainment, world-famous landmarks, and diverse culture.",
-      image: "/images/nyc.jpg",
-      price: "From $1,199",
+      image: "/images/dest_nyc.png",
+      price: "$1,199 (₹1,00,000)",
       duration: "6 days",
       highlights: ["Times Square", "Central Park", "Broadway Shows"]
     },
@@ -62,8 +62,8 @@ const Destinations = () => {
       id: 6,
       name: "Dubai, UAE",
       description: "Experience luxury and innovation in this modern desert metropolis with stunning architecture.",
-      image: "/images/dubai.jpg",
-      price: "From $1,399",
+      image: "/images/dest_dubai.png",
+      price: "AED 5,100 (₹1,16,000)",
       duration: "7 days",
       highlights: ["Burj Khalifa", "Desert Safari", "Luxury Shopping"]
     }
@@ -130,7 +130,6 @@ const Destinations = () => {
               <div className="p-6">
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white">{destination.name}</h3>
-                  <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-3 py-1 rounded-full">{destination.price}</span>
                 </div>
 
                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 leading-relaxed">
@@ -158,9 +157,6 @@ const Destinations = () => {
                     className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-2.5 px-4 rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 text-sm shadow-md hover:shadow-lg"
                   >
                     Plan Trip
-                  </button>
-                  <button className="px-4 py-2.5 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 text-sm">
-                    Save
                   </button>
                 </div>
               </div>

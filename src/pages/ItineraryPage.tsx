@@ -29,7 +29,6 @@ interface Place {
   time?: string;
   pricing?: string;
   bestTime?: string;
-  image?: string;
   location?: string; // Google Maps URL
   coordinates?: Coords;
 }
@@ -41,7 +40,6 @@ interface Hotel {
   rating?: string | number;
   amenities?: string[];
   description?: string;
-  image?: string;
   location?: string; // Google Maps URL
   coordinates?: Coords;
 }
@@ -168,7 +166,6 @@ const ItineraryPage: React.FC = () => {
             time: "Morning",
             pricing: "$20",
             bestTime: "April - October",
-            image: "/images/bg1.jpg",
             location: "https://www.google.com/maps/place/Santorini",
             coordinates: { lat: 36.3932, lng: 25.4615 },
           },
@@ -181,7 +178,6 @@ const ItineraryPage: React.FC = () => {
             rating: "4.7",
             amenities: ["Pool", "WiFi", "Breakfast"],
             description: "Luxury stay with caldera views.",
-            image: "/images/bg2.jpg",
             location: "https://www.google.com/maps/place/Blue+Palace",
             coordinates: { lat: 36.3932, lng: 25.5215 },
           },
@@ -346,14 +342,6 @@ const ItineraryPage: React.FC = () => {
         {/* PDF-captured content starts here */}
         <div ref={contentRef} className="space-y-10">
 
-          {/* User Location Info */}
-          {userCoords && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-gray-800/60 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 flex justify-center text-sm text-gray-500 dark:text-gray-400">
-              <p className="flex items-center gap-2">
-                📍 Your Location: {userCoords.lat.toFixed(4)}, {userCoords.lng.toFixed(4)}
-              </p>
-            </motion.div>
-          )}
 
           {/* Places & Hotels Sections */}
           {[
@@ -363,31 +351,32 @@ const ItineraryPage: React.FC = () => {
               data: augPlaces,
               empty: "No place recommendations available.",
               render: (p: any, i: number) => (
-                <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05 }} className="group bg-white dark:bg-gray-800/60 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 hover:shadow-xl transition-all duration-500 overflow-hidden">
-                  {/* Image Section */}
-                  <div className="relative h-48 bg-gradient-to-br from-indigo-200 via-purple-100 to-blue-200 dark:from-indigo-900 dark:via-purple-900 dark:to-blue-900 overflow-hidden">
-                    <img src="/images/places.jpg" alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e: any) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }} />
-                    <div className="hidden w-full h-full items-center justify-center absolute inset-0 bg-gradient-to-br from-indigo-200 via-purple-100 to-blue-200 dark:from-indigo-900 dark:via-purple-900 dark:to-blue-900">
-                      <MapPin className="w-12 h-12 text-white/60" />
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                    <h3 className="absolute bottom-3 left-4 right-4 font-bold text-lg text-white drop-shadow-lg">{p.name}</h3>
-                  </div>
+                <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05 }} className="group bg-white dark:bg-gray-800/60 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 hover:shadow-xl hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-all duration-500 overflow-hidden">
+                  {/* Accent bar */}
+                  <div className="h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500" />
 
-                  {/* Content Section */}
-                  <div className="p-4 space-y-3">
-                    {p.details && <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{p.details}</p>}
+                  {/* Content */}
+                  <div className="p-5 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="shrink-0 mt-0.5 w-9 h-9 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
+                        <MapPin className="w-4.5 h-4.5 text-indigo-600 dark:text-indigo-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-base text-gray-900 dark:text-white leading-snug">{p.name}</h3>
+                        {p.details && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">{p.details}</p>}
+                      </div>
+                    </div>
 
                     <div className="flex flex-wrap gap-2">
-                      <span className="inline-flex items-center gap-1 text-xs font-medium bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 px-2.5 py-1 rounded-full">🕒 {p.time || "Flexible"}</span>
-                      <span className="inline-flex items-center gap-1 text-xs font-medium bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-400 px-2.5 py-1 rounded-full">💰 {p.pricing || "Free"}</span>
-                      <span className="inline-flex items-center gap-1 text-xs font-medium bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-full">🌤️ {p.bestTime || "All year"}</span>
+                      <span className="inline-flex items-center gap-1 text-xs font-medium bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 px-2.5 py-1 rounded-full"><Clock className="w-3 h-3" /> {p.time || "Flexible"}</span>
+                      <span className="inline-flex items-center gap-1 text-xs font-medium bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-400 px-2.5 py-1 rounded-full"><DollarSign className="w-3 h-3" /> {p.pricing || "Free"}</span>
+                      <span className="inline-flex items-center gap-1 text-xs font-medium bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-full"><Calendar className="w-3 h-3" /> {p.bestTime || "All year"}</span>
                     </div>
 
                     {p.distanceKm !== null && p.distanceKm !== undefined && (
-                      <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-2.5">
+                      <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-2.5 flex items-center justify-between">
                         <div className="text-sm text-gray-800 dark:text-gray-200 font-semibold">{p.distanceKm} km away</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">🚗 {p.etaDrive} • 🚶 {p.etaWalk}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">🚗 {p.etaDrive} · 🚶 {p.etaWalk}</div>
                       </div>
                     )}
 
@@ -410,42 +399,45 @@ const ItineraryPage: React.FC = () => {
               data: augHotels,
               empty: "No hotel data available.",
               render: (h: any, i: number) => (
-                <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05 }} className="group bg-white dark:bg-gray-800/60 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 hover:shadow-xl transition-all duration-500 overflow-hidden">
-                  {/* Image Section */}
-                  <div className="relative h-48 bg-gradient-to-br from-purple-200 via-indigo-100 to-blue-200 dark:from-purple-900 dark:via-indigo-900 dark:to-blue-900 overflow-hidden">
-                    <img src="/images/hotel.png" alt={h.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e: any) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }} />
-                    <div className="hidden w-full h-full items-center justify-center absolute inset-0 bg-gradient-to-br from-purple-200 via-indigo-100 to-blue-200 dark:from-purple-900 dark:via-indigo-900 dark:to-blue-900">
-                      <Hotel className="w-12 h-12 text-white/60" />
+                <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05 }} className="group bg-white dark:bg-gray-800/60 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/50 hover:shadow-xl hover:border-purple-200 dark:hover:border-purple-500/30 transition-all duration-500 overflow-hidden">
+                  {/* Accent bar */}
+                  <div className="h-1.5 bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500" />
+
+                  {/* Content */}
+                  <div className="p-5 space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="shrink-0 mt-0.5 w-9 h-9 rounded-lg bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center">
+                          <Hotel className="w-4.5 h-4.5 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-base text-gray-900 dark:text-white leading-snug">{h.name}</h3>
+                          {h.address && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 flex items-center gap-1"><MapPin className="w-3 h-3 shrink-0" /> {h.address}</p>}
+                        </div>
+                      </div>
+                      {h.rating && (
+                        <span className="shrink-0 inline-flex items-center gap-1 text-xs font-bold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 px-2 py-1 rounded-full">⭐ {h.rating}</span>
+                      )}
                     </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                    <h3 className="absolute bottom-3 left-4 right-4 font-bold text-lg text-white drop-shadow-lg">{h.name}</h3>
-                    {h.rating && (
-                      <span className="absolute top-3 right-3 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full shadow">⭐ {h.rating}</span>
-                    )}
-                  </div>
 
-                  {/* Content Section */}
-                  <div className="p-4 space-y-3">
-                    {h.description && <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{h.description}</p>}
+                    {h.description && <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{h.description}</p>}
 
-                    <div className="flex items-center gap-3">
-                      {h.price && <span className="text-sm font-semibold text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10 px-2.5 py-1 rounded-full">💵 {h.price}</span>}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {h.price && <span className="inline-flex items-center gap-1 text-xs font-semibold text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10 px-2.5 py-1 rounded-full"><DollarSign className="w-3 h-3" /> {h.price}</span>}
                     </div>
-
-                    {h.address && <p className="text-sm text-gray-500 dark:text-gray-400 flex items-start gap-1"><MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0 text-gray-400 dark:text-gray-500" /> {h.address}</p>}
 
                     {h.amenities && h.amenities.length > 0 && (
                       <div className="flex flex-wrap gap-1.5">
                         {h.amenities.map((a: string, j: number) => (
-                          <span key={j} className="text-xs bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded-full">{a}</span>
+                          <span key={j} className="text-xs bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 px-2.5 py-1 rounded-full">{a}</span>
                         ))}
                       </div>
                     )}
 
                     {h.distanceKm !== null && h.distanceKm !== undefined && (
-                      <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-2.5">
+                      <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-2.5 flex items-center justify-between">
                         <div className="text-sm text-gray-800 dark:text-gray-200 font-semibold">{h.distanceKm} km away</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">🚗 {h.etaDrive} • 🚶 {h.etaWalk}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">🚗 {h.etaDrive} · 🚶 {h.etaWalk}</div>
                       </div>
                     )}
 
